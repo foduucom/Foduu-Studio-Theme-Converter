@@ -1,0 +1,24 @@
+[project]
+name = "template-converter"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "fastapi>=0.129.0",
+    "ipykernel>=7.2.0",
+    "jinja2>=3.1.6",
+    "langchain-community>=0.4.1",
+    "langchain-nvidia-ai-endpoints>=1.0.3",
+    "langchain[google-genai]>=1.2.9",
+    "lxml>=6.0.2",
+    "markdownify>=1.2.2",
+    "pillow>=12.1.1",
+    "playwright>=1.58.0",
+    "python-dotenv>=1.2.1",
+    "python-multipart>=0.0.22",
+    "rapidfuzz>=3.14.3",
+    "tqdm>=4.67.3",
+    "uvicorn>=0.40.0",
+]

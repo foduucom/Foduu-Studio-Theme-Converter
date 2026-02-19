@@ -1,0 +1,30 @@
+{
+  "navigation": [
+    {
+      "id": "main-menu",
+      "name": "Main Menu",
+      "type": "both"
+    },
+    {
+      "id": "footer",
+      "name": "Footer Menu",
+      "type": "website"
+    },
+    {
+      "id": "sidebar",
+      "name": "Sidebar",
+      "type": "mobile_app"
+    },
+    {
+      "id": "topbar",
+      "name": "Top Bar",
+      "type": "mobile_app"
+    }
+  ],
+  "logo": [
+    "header_logo_light",
+    "header_logo_dark",
+    "footer_logo_light",
+    "footer_logo_dark"
+  ]
+}

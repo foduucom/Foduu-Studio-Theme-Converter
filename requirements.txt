@@ -1,0 +1,9 @@
+langchain[google-genai]
+ipykernel
+python-dotenv
+beautifulSoup4
+tqdm
+langchain-nvidia-ai-endpoints
+uvicorn
+fastapi
+pillow

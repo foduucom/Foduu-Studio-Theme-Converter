@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Theme Converter</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div class="wrapper">
+
+        <div class="card">
+            <h1>Theme Converter</h1>
+            <p class="subtitle">
+                Fill details and upload your theme ZIP.
+            </p>
+
+            <form action="/generate" method="post" enctype="multipart/form-data">
+
+                <!-- Row 1 -->
+                <div class="row">
+                    <div class="field">
+                        <label>Theme Name</label>
+                        <input type="text" name="theme_name" placeholder="My Theme" required>
+                    </div>
+
+                    <div class="field">
+                        <label>Version</label>
+                        <input type="text" name="theme_version" value="1.0.0">
+                    </div>
+                </div>
+
+                <!-- Row 2 -->
+                <div class="row">
+                    <div class="field">
+                        <label>Category</label>
+                        <input type="text" name="theme_category" placeholder="Business">
+                    </div>
+
+                    <div class="field">
+                        <label>Subcategory</label>
+                        <input type="text" name="theme_subcategory" placeholder="Corporate">
+                    </div>
+                </div>
+
+                <!-- Row 3 -->
+                <div class="row">
+                    <div class="field">
+                        <label>Author</label>
+                        <input type="text" name="theme_author" placeholder="Your Name">
+                    </div>
+
+                    <div class="field">
+                        <label>Email</label>
+                        <input type="email" name="theme_author_email" placeholder="you@example.com">
+                    </div>
+                </div>
+
+                <!-- Row 4 -->
+                <div class="row">
+                    <div class="field">
+                        <label>Website Type</label>
+                        <input type="text" name="website_type" placeholder="Portfolio / Ecommerce">
+                    </div>
+
+                    <div class="field">
+                        <label>Demo URL</label>
+                        <input type="url" name="demo_url" placeholder="https://demo.com">
+                    </div>
+                </div>
+
+                <!-- Upload -->
+                <div class="upload">
+                    <label class="upload-title">Upload Theme ZIP</label>
+                    <input type="file" name="file" accept=".zip" required>
+                </div>
+
+                <!-- Status Box -->
+                <div id="statusBox" class="status-box" style="display:none;"></div>
+                
+                <!-- Button -->
+                <button type="submit" class="btn" id="convertBtn">
+                    Convert Theme
+                </button>
+                
+
+            </form>
+        </div>
+
+    </div>
+
+    <script src="/static/app.js"></script>
+
+</body>
+
+</html>
