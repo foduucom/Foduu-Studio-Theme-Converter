@@ -245,13 +245,11 @@ def create_output_structure(output_dir: Path):
     # Files
 
     page_file = theme_dir / "page.mustache"
-    config_file = theme_dir / "config.json"
     sample_page_file = "sample_page.mustache"
     sample_config_file = "sample_config.json"
 
 
     copy_template(sample_page_file, page_file)
-    copy_template(sample_config_file, config_file)
     #  Return theme directory path
     return theme_dir
 
@@ -369,3 +367,39 @@ def give_full_theme_data(theme_data):
     theme_data["THEME_SLUG"] = slugify(theme_data["THEME_NAME"]) + "-theme"
 
     return theme_data
+
+
+def process_html_path(soup):
+
+    for tag in soup.find_all(["link", "script", "img"]):
+
+        attr = "href" if tag.name == "link" else "src"
+
+        if not tag.get(attr):
+            continue
+
+        url = tag[attr].strip()
+
+        # Skip external, template vars, or already processed
+        if url.startswith(("http", "//", "{{", "/assets/")):
+            continue
+
+        url_path = Path(url)
+        ext = url_path.suffix.lower()
+
+        # If path has folders
+        if len(url_path.parts) > 1:
+            tag[attr] = "/assets/" + url.lstrip("/")
+
+        # If only filename
+        else:
+            filename = url_path.name
+
+            if ext == ".css":
+                tag[attr] = f"/assets/css/{filename}"
+            elif ext == ".js":
+                tag[attr] = f"/assets/js/{filename}"
+            else:
+                tag[attr] = f"/assets/images/{filename}"
+
+    return soup

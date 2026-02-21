@@ -8,8 +8,9 @@ expense_lock = Lock()
 
 
 def update_expense_log(component_name: str, usage: dict):
+    
     with expense_lock:
-        expense_file = os.getenv("EXPENSE_FILE")
+        expense_file = Path(os.getenv("EXPENSE_FILE"))
         os.makedirs("temp", exist_ok=True)
         expense_data = {}
 

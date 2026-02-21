@@ -101,16 +101,58 @@ def replace_with_content_preserve_partials(wrapper):
 
     return wrapper
 
+from bs4 import Comment
+
+def remove_all_comments(soup):
+    for c in soup.find_all(string=lambda text: isinstance(text, Comment)):
+        c.extract()
+
+from bs4 import Tag
+
+def remove_empty_divs(soup):
+    if not soup.body:
+        return
+
+    removed = 0
+
+    while True:
+        empty_found = False
+
+        # Get all divs inside body
+        divs = soup.body.find_all("div")
+
+        for div in divs:
+            if not isinstance(div, Tag):
+                continue
+
+            # Skip divs that have attributes (safer)
+            if div.attrs:
+                continue
+
+            # Check if div has any real content
+            has_text = div.get_text(strip=True)
+            has_children = div.find(True)
+
+            if not has_text and not has_children:
+                div.decompose()
+                removed += 1
+                empty_found = True
+
+        if not empty_found:
+            break
+
+    print("Removed empty divs:", removed)
 
 def build_layout(html_file, output_dir, partial_configs_path,
                  shortcode_configs_path, output_name):
     
     print("building default layout... at:", output_dir)
     html = Path(html_file).read_text(encoding="utf-8")
-    soup = BeautifulSoup(html, "lxml")
+    soup = BeautifulSoup(html, "html.parser")
 
     output_file = Path(output_dir) / "layouts" / output_name
 
+    os.makedirs(output_file.parent, exist_ok=True)
     with open(partial_configs_path, "r", encoding="utf-8") as f:
         partials = json.load(f)
 
@@ -120,6 +162,8 @@ def build_layout(html_file, output_dir, partial_configs_path,
 
 
     rewrite_html_assets(soup)
+    # remove_all_comments(soup)
+
     print(len(partials), "partials found")
     for config in partials:
         selector = config["selector"]
@@ -154,7 +198,9 @@ def build_layout(html_file, output_dir, partial_configs_path,
 
     print("Removed shortcode HTML blocks:", removed)
     
-    footer_node = None
+
+    remove_empty_divs(soup)
+
     footer_node = body.find("footer")
     if not footer_node:
         for node in body.descendants:
@@ -167,6 +213,8 @@ def build_layout(html_file, output_dir, partial_configs_path,
         footer_node.insert_before(NavigableString("\n{{ content }}\n"))
     else:
         body.append(NavigableString("\n{{ content }}\n"))
+
+
 
     output_file.write_text(
         soup.decode(formatter=None),

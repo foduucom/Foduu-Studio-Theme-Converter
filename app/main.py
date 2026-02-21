@@ -36,7 +36,7 @@ async def root(request: Request):
 async def generate(
     file: UploadFile = File(...),
     theme_name: str = Form(None),
-    theme_version: str = "1.0.0",
+    theme_version: str = Form("1.0.0"),
     theme_category: str = Form(None),
     theme_subcategory: str = Form(None),
     theme_author: str = Form(None),

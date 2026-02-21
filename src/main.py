@@ -23,6 +23,9 @@ from .helper import (give_full_theme_data,
                      zip_output_folder)
 
 
+import asyncio
+from .create_config import create_config
+
 ws_manager = WebSocketManager()
 
 def for_now(folder_path):
@@ -79,7 +82,7 @@ def give_shortcodes(input_path,analyzed_html_path,output_dir,theme_name):
 
 def run_shortcode_generation(input_path, converted_theme_path, OUTPUT_DIR_NAME):
     futures = []
-
+    unzip_path = None
     with ThreadPoolExecutor(max_workers=4) as executor:
         for path, html_path, unzip_path in seperate_html(input_path):
             futures.append(
@@ -91,13 +94,13 @@ def run_shortcode_generation(input_path, converted_theme_path, OUTPUT_DIR_NAME):
                     OUTPUT_DIR_NAME
                 )
             )
+        unzip_path = unzip_path
 
     for f in futures:
         f.result()
 
     return unzip_path
 
-import asyncio
 async def main(input_path,theme_data):
     theme_data = give_full_theme_data(theme_data)
     start_time = time.time()
@@ -107,6 +110,7 @@ async def main(input_path,theme_data):
     converted_theme_path = create_output_structure(OUTPUT_DIR)
 
     create_readme(theme_data,OUTPUT_DIR)
+    config_file = converted_theme_path / "config.json"
     unzip_path=None
     logger.info("Analyzing HTML files One by one... ")
     unzip_path = await asyncio.to_thread(
@@ -115,9 +119,10 @@ async def main(input_path,theme_data):
         converted_theme_path,
         OUTPUT_DIR_NAME
     )
+
     if unzip_path and unzip_path.exists():
         html_path = await take_homepage_screenshot(unzip_path, OUTPUT_DIR)
-        
+        create_config(config_file,html_path)
         is_assets_exits = copy_assets(html_path.parent, converted_theme_path)
     else:
         await take_homepage_screenshot("", OUTPUT_DIR,html_path=input_path)
@@ -142,9 +147,7 @@ async def main(input_path,theme_data):
 
     calculate_total_expense()
 
-    # folder_to_delete = ["GenerateShortCode","SeparatedComponentsJson",
-    #                    "AnalyzedComponentsJson",
-    #                     "bad_outputs","temp"]
+    # folder_to_delete = ["temp"]
     # for folder in folder_to_delete:
     #     folder_path = Path(folder)
 

@@ -3,18 +3,39 @@ const statusBox = document.getElementById("statusBox");
 const button = document.getElementById("convertBtn");
 
 // ✅ WebSocket connection
-const ws = new WebSocket(`ws://${window.location.host}/ws`);
+let ws;
 
-ws.onmessage = (event) => {
-  statusBox.style.display = "block";
+function connectWS() {
+  ws = new WebSocket(`ws://${window.location.host}/ws`);
 
-  // ✅ Replace old message completely
-  statusBox.innerText = event.data;
-};
+  ws.onopen = () => {
+    console.log("✅ WebSocket connected");
+  };
+
+  ws.onmessage = (event) => {
+    statusBox.style.display = "block";
+    statusBox.innerText = event.data;
+  };
+
+  ws.onclose = () => {
+    console.log("❌ WebSocket closed. Reconnecting...");
+    setTimeout(connectWS, 1000);
+  };
+
+  ws.onerror = () => {
+    ws.close();
+  };
+}
+
+// Start connection
+connectWS();
 
 form.addEventListener("submit", async function (e) {
   e.preventDefault();
-
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    connectWS();
+  }
+  
   statusBox.style.display = "block";
   statusBox.innerText = "Starting conversion...";
 

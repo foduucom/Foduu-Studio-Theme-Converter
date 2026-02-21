@@ -10,13 +10,13 @@ from .logger import logger
 from langchain_nvidia_ai_endpoints import ChatNVIDIA
 from .track_expense import update_expense_log
 import shutil
+from .progress import push_log
+
+load_dotenv()
 
 OUTPUT_FOLDER = os.getenv("OUTPUT_FOLDER")
 EXTRACT_FOLDER = os.getenv("EXTRACT_FOLDER")
 
-
-
-load_dotenv()
 use = os.getenv("USE")
 model_name = os.getenv("MODEL_NAME")
 if use == "GEMINI":
@@ -26,6 +26,7 @@ if use == "GEMINI":
     )
 else:
     model = ChatNVIDIA(model=model_name,
+                        temperature=0.5,
                         max_completion_tokens=31384,
     )   
 with open("prompt/seperation.md", "r", encoding="utf-8") as f:
@@ -34,7 +35,7 @@ with open("prompt/seperation.md", "r", encoding="utf-8") as f:
 
 def extract_zip(zip_path, extract_to):
     logger.info(f"Extracting ZIP: {zip_path}")
-
+    push_log(f"Extracting ZIP: {zip_path}")
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_ref.extractall(extract_to)
 
@@ -59,7 +60,6 @@ def clean_html(html_path):
         script.decompose()
 
     return body.prettify()
-import time
 
 def html_to_json(html_code,html_path=None,retries=3):
     messages = [
@@ -121,6 +121,7 @@ def process_html_file(html_path, project_name=None, extract_folder=None):
         logger.warning(f"No <body> found in {html_path}, skipping...")
         return None
 
+    push_log(f"Analyzing HTML {html_path.stem}...")
     json_output = html_to_json(html_code, html_path)
 
     with open(output_path, "w", encoding="utf-8") as f:
@@ -145,6 +146,8 @@ def process_zip_file(zip_path):
 
         for file in files:
             if file.endswith(".html"):
+                if file != "index.html":
+                    continue
                 
                 full_path = Path(root) / file
 

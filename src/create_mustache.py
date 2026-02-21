@@ -63,7 +63,6 @@ def get_unique_filepath(output_dir: Path, name: str) -> Path:
             return new_path
         i += 1
 
-    return base_path
 
 def save_mustache_files(json_file: str,output_dir:Path):
     json_path = Path(json_file)

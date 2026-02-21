@@ -21,6 +21,7 @@ model_name = os.getenv("MODEL_NAME")
 batch_size=5
 model = ChatNVIDIA(model=model_name,
     max_completion_tokens=31384,
+    temperature=0.5
 )
 structured_model = model.with_structured_output(ShortcodeSchema)
 
@@ -152,7 +153,7 @@ def generate_shortcodes_batch(input_json_file: str,theme_name: str):
     
     folder_name =  input_path.parent.name
 
-    output_dir =  f"{theme_name}/{os.getenv('GENERATE_FOLDER')}" / folder_name
+    output_dir =  Path(f"{os.getenv('GENERATE_FOLDER')}/{theme_name}/{folder_name}")
     output_dir.mkdir(parents=True, exist_ok=True)
 
     output_file = output_dir / "shortcodes.json"
@@ -180,7 +181,6 @@ def generate_shortcodes_batch(input_json_file: str,theme_name: str):
     for component_dict in shortcodes:
         key = component_dict["name"]
         html = component_dict["html"]
-
 
         if key in already_done:
             continue

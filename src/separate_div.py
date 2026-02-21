@@ -4,7 +4,7 @@ from tqdm import tqdm
 from pathlib import Path
 from .logger import logger
 from .progress import push_log
-
+from .helper import process_html_path
 OUTPUT_DIR = "temp/AnalyzedComponentsJson"
 
 
@@ -13,7 +13,6 @@ def clean_html(soup):
     for tag in soup.find_all(["script", "style"]):
         tag.decompose()
     return soup
-
 
 def extract_components(html_file: str, config_file: str,theme_name: str):
     """
@@ -51,11 +50,12 @@ def extract_components(html_file: str, config_file: str,theme_name: str):
     with open(html_path, "r", encoding="utf-8") as f:
         soup = BeautifulSoup(f.read(), "html.parser")
 
+    soup = process_html_path(soup)
     soup = clean_html(soup)
 
     partials = []
     shortcodes = []
-        
+    
     logger.info(f"Total selectors in config: {len(configs)}")
     push_log(f"Extracting components from: {html_path.name} file")
     # ---- Extract Components ----
@@ -65,12 +65,12 @@ def extract_components(html_file: str, config_file: str,theme_name: str):
         section_type = config.get("type", "shortcode")
         name = config.get("name", "component")
 
-        element = soup.select_one(selector)
+        element = soup.select_one(selector)  # only first match
 
         if not element:
             tqdm.write(f"Not found: {selector}")
             continue
-
+        
         component_data = {
             "name": name,
             "type": section_type,
@@ -83,6 +83,7 @@ def extract_components(html_file: str, config_file: str,theme_name: str):
         else:
             shortcodes.append(component_data)
 
+        element.decompose()
     
     partial_file = outdir_path / "partials.json"
     shortcode_file = outdir_path / "shortcodes.json"
@@ -98,6 +99,9 @@ def extract_components(html_file: str, config_file: str,theme_name: str):
     logger.info(f"Shortcodes extracted: {len(shortcodes)} → {shortcode_file}")
 
     return  (partial_file, shortcode_file)
+
+
+
 if __name__ == "__main__":
     extract_components(
         html_file="index.html",
