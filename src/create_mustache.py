@@ -9,22 +9,28 @@ ws_manager = WebSocketManager()
 def wrap_try_catch(script: str):
 
 
+    # script = re.sub(
+    #     r"const shortcodeSidebar = params\??\.shortcodeSidebar;",
+    #     """const shortcodeSidebar = params.shortcodeSidebar;
+
+    # try {""",
+    #     script
+    # )
+
     script = re.sub(
         r"const shortcodeSidebar = params\??\.shortcodeSidebar;",
         """const shortcodeSidebar = params.shortcodeSidebar;
-
-    try {""",
-        script
+    """,
+    script
     )
 
-
-    script = script.replace(
-            "</script>",
-            """} catch (error) {
-    console.log(error instanceof Error ? error.message :JSON.stringify(error, null, 2));
-    }
-    </script>"""
-        )
+    # script = script.replace(
+    #         "</script>",
+    #         """} catch (error) {
+    # console.log(error instanceof Error ? error.message :JSON.stringify(error, null, 2));
+    # }
+    # </script>"""
+    #     )
 
     return script
 
@@ -42,7 +48,9 @@ def create_shortcode(data,filename):
     }}
     """)
 
-    final_shortcode = f"""{code}
+    final_shortcode = f"""
+    <!-- SCRIPT START -->
+    {code}
 
     <!-- TEMPLATE START -->
 
@@ -94,7 +102,6 @@ def save_mustache_files(json_file: str,output_dir:Path):
         name = comp["name"]
         file_path = output_dir / f"{json_path.parent.name}_{name}.mustache"
 
-        # file_path = get_unique_filepath(output_dir, name)
         if file_path.exists():
             continue
         else:

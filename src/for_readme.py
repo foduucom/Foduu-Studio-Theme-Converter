@@ -16,27 +16,8 @@ model = ChatNVIDIA(model=model_name,
 )
 structured_model = model.with_structured_output(ReadmeMetadata)
 
-system_prompt = """
-You will receive only a theme name.
-
-Return JSON exactly like:
-
-{
-  "description": "...",
-  "tags": ["tag1", "tag2", "tag3"]
-}
-
-
-Rules:
-- Description must be max 50 words.
-- Mention “Foduu Studio” naturally.
-- Do NOT say Foduu Studio created/designed it.
-- Do NOT mention “HTML theme” or “template”.
-- Do NOT include the theme name.
-- Tags must be 4–8 short lowercase keywords, comma-separated.
-- Tags should match the niche and style (e.g., responsive, modern, contractor, portfolio).
-- Output ONLY valid JSON, nothing else.
-"""
+with open("prompt/readme_metadata.md","r") as f:
+    system_prompt = f.read()
 
 def generate_metadata(theme_name:str):
     logger.info(f"Generating metadata for theme: {theme_name}")

@@ -19,14 +19,14 @@ model = ChatNVIDIA(model=model_name,
 
 def update_navigation_with_ai(original_data, ai_response_string):
     try:
-        # Parse the AI's string response into a Python list
+        
         new_navigation = json.loads(ai_response_string)
         
-        # Validate that the AI returned a list
+        
         if not isinstance(new_navigation, list):
             raise ValueError("AI response must be a JSON array")
             
-        # Update the dictionary
+        
         updated_data = original_data.copy()
         updated_data["navigation"] = new_navigation
         
@@ -42,10 +42,10 @@ def generate_navigation(soup):
 
     with open("prompt/config_prompt.md","r") as f:
         prompt = f.read()
-    # extract the <body> tag
+    
     body = soup.find("body")
 
-    # Remove all script tags inside body
+    
     for script in body.find_all("script"):
         script.decompose()
     messages = [
@@ -73,7 +73,7 @@ def create_config(config_path,html_path):
     response = generate_navigation(soup)
     update_data = update_navigation_with_ai(data,response)
 
-    # just replace data in config file
+    
     with open(config_path,'w') as f:
         json.dump(update_data, f, indent=2, ensure_ascii=False)
     return update_data

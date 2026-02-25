@@ -73,7 +73,7 @@ async def take_homepage_screenshot(unzip_path: Path, output_dir: Path,html_path=
 
     img = Image.open(png_path)
     img.save(webp_path, "webp", quality=85,optimize=True)
-    # Remove PNG if you want
+    
     png_path.unlink()
 
     logger.info(f"Screenshot saved: {webp_path}")
@@ -86,7 +86,7 @@ def save_unique_partials(partials, partials_dir, source_folder_name):
 
     registry = {}
 
-    # Load registry safely
+    
     if registry_file.exists():
         content = registry_file.read_text(encoding="utf-8").strip()
         if content:
@@ -98,25 +98,25 @@ def save_unique_partials(partials, partials_dir, source_folder_name):
     saved, skipped = 0, 0
 
     for partial in partials:
-        name = partial["name"]   # header/footer
+        name = partial["name"]   
         html = partial["html"].strip()
 
         html_hash = hashlib.md5(html.encode("utf-8")).hexdigest()
 
         if source_folder_name != "index":
-            # Skip duplicate HTML globally
+            
             if html_hash in registry.values():
                 print("Skipping duplicate:", name)
                 skipped += 1
                 continue
 
-        # Always prefixed filename
+        
         filename = f"{source_folder_name}_{name}.mustache"
         partial_file = partials_dir / filename
 
         partial_file.write_text(html, encoding="utf-8")
 
-        # Store hash
+        
         registry[filename] = html_hash
 
         print("Saved:", filename)
@@ -128,99 +128,80 @@ def save_unique_partials(partials, partials_dir, source_folder_name):
     )
 
     print(f"Saved: {saved}, Skipped: {skipped}")
-
+from pathlib import Path
+import shutil
 
 def copy_assets(theme_path: Path, output_dir: Path):
 
     assets_out = output_dir / "assets"
     assets_out.mkdir(parents=True, exist_ok=True)
 
-    asset_exts = {".css", ".js", ".png", ".jpg", ".jpeg",
-                  ".svg", ".webp", ".gif"}
+    asset_exts = {
+        ".css", ".js",
+        ".png", ".jpg", ".jpeg", ".svg", ".webp", ".gif",
+        ".woff", ".woff2", ".ttf", ".eot"
+    }
 
     all_assets_path = []
-    copied_folders = set()
 
-    # -----------------------------
-    # STEP 1: Copy existing assets folder(s)
-    # -----------------------------
-    existing_assets = [
-        f for f in theme_path.rglob("assets")
-        if f.is_dir()
-        and not any("doc" in parent.name.lower() for parent in f.parents)
-    ]
+    # ---------------------------------
+    # 1️⃣ Copy top-level asset folders
+    # ---------------------------------
+    for item in theme_path.iterdir():
 
-    is_assets_exists = False
+        if not item.is_dir():
+            continue
 
-    for asset_folder in existing_assets:
-        logger.info(f"Copying assets folder: {asset_folder}")
+        if "doc" in item.name.lower():
+            continue
+
+        has_assets = any(
+            f.suffix.lower() in asset_exts
+            for f in item.rglob("*")
+            if f.is_file()
+        )
+
+        if not has_assets:
+            continue
+
+        dest_folder = assets_out / item.name
 
         shutil.copytree(
-            asset_folder,
-            assets_out,
+            item,
+            dest_folder,
             dirs_exist_ok=True
         )
 
-        is_assets_exists = True
+        all_assets_path.append(dest_folder)
 
-    # -----------------------------
-    # STEP 2: Scan for extra static files outside assets
-    # -----------------------------
-    for file in theme_path.rglob("*"):
+    # ---------------------------------
+    # 2️⃣ Copy loose root-level files
+    # ---------------------------------
+    for file in theme_path.iterdir():
 
         if not file.is_file():
             continue
 
-        # Skip docs
-        if any("doc" in parent.name.lower() for parent in file.parents):
-            continue
-
         ext = file.suffix.lower()
+
         if ext not in asset_exts:
             continue
 
-        folder = file.parent
+        if ext == ".css":
+            dest_dir = assets_out / "css"
+        elif ext == ".js":
+            dest_dir = assets_out / "js"
+        else:
+            dest_dir = assets_out / "images"
 
-        # Skip files already inside an assets folder
-        if "assets" in [p.name.lower() for p in file.parents]:
-            continue
+        dest_dir.mkdir(parents=True, exist_ok=True)
 
-        # CASE 1: Loose file in theme root → organize into css/js/images
-        if folder == theme_path:
+        dest = dest_dir / file.name
+        shutil.copy2(file, dest)
 
-            if ext == ".css":
-                dest_dir = assets_out / "css"
-            elif ext == ".js":
-                dest_dir = assets_out / "js"
-            else:
-                dest_dir = assets_out / "images"
+        all_assets_path.append(dest)
 
-            dest_dir.mkdir(parents=True, exist_ok=True)
-
-            dest = dest_dir / file.name
-            shutil.copy2(file, dest)
-
-            logger.info(f"Copied loose asset: {file} → {dest}")
-            all_assets_path.append(dest)
-            continue
-
-        # CASE 2: File inside plugin folder → copy whole folder once
-        if folder not in copied_folders:
-            copied_folders.add(folder)
-
-            dest_folder = assets_out / folder.name
-
-            logger.info(f"Copying extra folder: {folder} → {dest_folder}")
-
-            shutil.copytree(
-                folder,
-                dest_folder,
-                dirs_exist_ok=True
-            )
-
-            all_assets_path.append(dest_folder)
-
-    return is_assets_exists, all_assets_path
+    return True, all_assets_path
 
 
 def copy_template(sample_path, target_path):
@@ -231,26 +212,25 @@ def create_output_structure(output_dir: Path):
     logger.info("Creating output directory structure...")
 
    
-    # Main folders
+    
     (output_dir / "documentation").mkdir(parents=True, exist_ok=True)
     (output_dir / "dummy_data").mkdir(parents=True, exist_ok=True)
 
-    # Theme structure
+    
     theme_dir = output_dir / "theme"
     (theme_dir / "assets").mkdir(parents=True, exist_ok=True)
     (theme_dir / "partials").mkdir(parents=True, exist_ok=True)
     (theme_dir / "shortcodes").mkdir(parents=True, exist_ok=True)
     (theme_dir / "layouts").mkdir(parents=True, exist_ok=True)
 
-    # Files
+    
 
     page_file = theme_dir / "page.mustache"
     sample_page_file = "sample_page.mustache"
-    sample_config_file = "sample_config.json"
 
 
     copy_template(sample_page_file, page_file)
-    #  Return theme directory path
+    
     return theme_dir
 
 def process_unzip_folder(unzip_path: Path, output_dir: Path):
@@ -264,35 +244,35 @@ def process_unzip_folder(unzip_path: Path, output_dir: Path):
 
 
 def zip_output_folder(output_dir: Path):
-    zip_name = str(output_dir)  # base name
+    zip_name = str(output_dir)  
     shutil.make_archive(zip_name, "zip", output_dir)
     logger.info(f"Final ZIP created: {zip_name}.zip")
 
     return f"{zip_name}.zip"
 
 def copy_404_page(dest_folder,theme_name):
-    #  Source JSON file
+    
     shortcode_json_file = Path(f"temp/AnalyzedComponentsJson/{theme_name}/404/shortcodes.json")
     partial_json_file = Path(f"temp/AnalyzedComponentsJson/{theme_name}/404/partials.json")
-    #  Check file exists
+    
     if not shortcode_json_file.exists() or not partial_json_file.exists():
         logger.warning("JSON files not found.")
         return
-    #  Load JSON
+    
     shortcode_data = json.loads(shortcode_json_file.read_text(encoding="utf-8"))
     partial_data = json.loads(partial_json_file.read_text(encoding="utf-8"))
 
-    #  Destination mustache file
+    
     dest_file = Path(dest_folder) / "404.mustache"
     dest_file.parent.mkdir(parents=True, exist_ok=True)
 
-    #  Mustache header
+    
     header = """
     {{!-- @layout default --}}
 
     """
 
-    #  Collect all html blocks
+    
     html_blocks = []
     for item in partial_data[:-1]:
         name = item["name"]
@@ -307,7 +287,7 @@ def copy_404_page(dest_folder,theme_name):
             html_blocks.append(html)
 
     html_blocks.append(NavigableString(f"{{{{>{partial_data[-1]['name']}}}}}"))
-    #  Write final file
+    
     dest_file.write_text(
         header + "\n\n".join(html_blocks),
         encoding="utf-8"
@@ -341,21 +321,21 @@ def slugify(name: str) -> str:
 def give_full_theme_data(theme_data):
     dtag = generate_metadata(theme_data["THEME_NAME"])
 
-    # Fallback if metadata fails
+    
     if not dtag:
         dtag = {
             "description": "",
             "tags": []
         }
 
-    # Version default
+    
     if not theme_data.get("VERSION"):
         theme_data["VERSION"] = "1.0.0"
 
-    # Description
+    
     theme_data["DESCRIPTION"] = dtag.get("description", "")
 
-    # Tags handling (string or list)
+    
     tags = dtag.get("tags", [])
 
     if isinstance(tags, str):
@@ -363,7 +343,7 @@ def give_full_theme_data(theme_data):
 
     theme_data["TAGS"] = ",".join(tags)
 
-    # Theme slug
+    
     theme_data["THEME_SLUG"] = slugify(theme_data["THEME_NAME"]) + "-theme"
 
     return theme_data
@@ -373,33 +353,43 @@ def process_html_path(soup):
 
     for tag in soup.find_all(["link", "script", "img"]):
 
-        attr = "href" if tag.name == "link" else "src"
-
-        if not tag.get(attr):
-            continue
-
-        url = tag[attr].strip()
-
-        # Skip external, template vars, or already processed
-        if url.startswith(("http", "//", "{{", "/assets/")):
-            continue
-
-        url_path = Path(url)
-        ext = url_path.suffix.lower()
-
-        # If path has folders
-        if len(url_path.parts) > 1:
-            tag[attr] = "/assets/" + url.lstrip("/")
-
-        # If only filename
+        if tag.name == "link":
+            attrs = ["href"]
+        elif tag.name == "img":
+            attrs = ["src", "data-src", "data-original", "data-lazy"]
         else:
-            filename = url_path.name
+            attrs = ["src"]
+             
+        for attr in attrs:
+            if not tag.get(attr):
+                continue
 
-            if ext == ".css":
-                tag[attr] = f"/assets/css/{filename}"
-            elif ext == ".js":
-                tag[attr] = f"/assets/js/{filename}"
+            url = tag[attr].strip()
+
+            
+            if url.startswith(("http", "//", "{{", "assets/")):
+                continue
+        
+            if url.startswith("/assets/"):
+                url = url[1:]
+                
+            url_path = Path(url)
+            ext = url_path.suffix.lower()
+
+            
+            if len(url_path.parts) > 1:
+                tag[attr] = "assets/" + url.lstrip("/")
+
+            
             else:
-                tag[attr] = f"/assets/images/{filename}"
+                filename = url_path.name
+
+                if ext == ".css":
+                    tag[attr] = f"assets/css/{filename}"
+                elif ext == ".js":
+                    tag[attr] = f"assets/js/{filename}"
+                else:
+                    tag[attr] = f"assets/images/{filename}"
 
     return soup
+

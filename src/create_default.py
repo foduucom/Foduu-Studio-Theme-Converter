@@ -2,6 +2,8 @@ from bs4 import BeautifulSoup, NavigableString
 from pathlib import Path
 import os
 import json
+from bs4 import Comment
+from bs4 import Tag
 
 
 ASSET_FOLDERS = {
@@ -29,11 +31,11 @@ def rewrite_html_assets(soup):
 
         url = tag[attr].strip()
 
-        # Skip external or template variables
+        
         if url.startswith(("http", "//", "{{")):
             continue
 
-        # Normalize path
+        
         url_path = Path(url)
 
         if url_path.parts and url_path.parts[0].lower() == "assets":
@@ -46,9 +48,9 @@ def rewrite_html_assets(soup):
         parent_folder = url_path.parent.name.lower()
         ext = url_path.suffix.lower()
 
-        # -----------------------------
-        # CASE 1: Root-level assets
-        # -----------------------------
+        
+        
+        
         if parent_folder in ["", ".", "assets"]:
 
             if ext == ".css":
@@ -60,9 +62,9 @@ def rewrite_html_assets(soup):
             else:
                 tag[attr] = "{{ baseUrl }}/assets/images/" + filename
 
-        # -----------------------------
-        # CASE 2: Plugin/Subfolder assets
-        # -----------------------------
+        
+        
+        
         else:
             tag[attr] = f"{{{{ baseUrl }}}}/assets/{parent_folder}/{filename}"
 
@@ -93,7 +95,7 @@ def replace_with_content_preserve_partials(wrapper):
         if "header" in p.get_text():
             wrapper.append(p)
 
-    wrapper.append(NavigableString("{{ content }}"))
+    wrapper.append(NavigableString("{{{ content }}}"))
 
     for p in partials:
         if "footer" in p.get_text():
@@ -101,13 +103,11 @@ def replace_with_content_preserve_partials(wrapper):
 
     return wrapper
 
-from bs4 import Comment
 
 def remove_all_comments(soup):
     for c in soup.find_all(string=lambda text: isinstance(text, Comment)):
         c.extract()
 
-from bs4 import Tag
 
 def remove_empty_divs(soup):
     if not soup.body:
@@ -118,18 +118,18 @@ def remove_empty_divs(soup):
     while True:
         empty_found = False
 
-        # Get all divs inside body
+        
         divs = soup.body.find_all("div")
 
         for div in divs:
             if not isinstance(div, Tag):
                 continue
 
-            # Skip divs that have attributes (safer)
+            
             if div.attrs:
                 continue
 
-            # Check if div has any real content
+            
             has_text = div.get_text(strip=True)
             has_children = div.find(True)
 
@@ -162,7 +162,7 @@ def build_layout(html_file, output_dir, partial_configs_path,
 
 
     rewrite_html_assets(soup)
-    # remove_all_comments(soup)
+    remove_all_comments(soup)
 
     print(len(partials), "partials found")
     for config in partials:
@@ -193,7 +193,7 @@ def build_layout(html_file, output_dir, partial_configs_path,
 
         element = soup.select_one(selector)
         if element:
-            element.decompose()   # FULL remove from HTML
+            element.decompose()   
             removed += 1
 
     print("Removed shortcode HTML blocks:", removed)
@@ -210,9 +210,9 @@ def build_layout(html_file, output_dir, partial_configs_path,
 
 
     if footer_node:
-        footer_node.insert_before(NavigableString("\n{{ content }}\n"))
+        footer_node.insert_before(NavigableString("\n{{{ content }}}\n"))
     else:
-        body.append(NavigableString("\n{{ content }}\n"))
+        body.append(NavigableString("\n{{{ content }}}\n"))
 
 
 

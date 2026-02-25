@@ -21,7 +21,9 @@ model_name = os.getenv("MODEL_NAME")
 batch_size=5
 model = ChatNVIDIA(model=model_name,
     max_completion_tokens=31384,
-    temperature=0.5
+    temperature=0.4,
+    top_p=0.95,
+
 )
 structured_model = model.with_structured_output(ShortcodeSchema)
 
@@ -67,8 +69,8 @@ def invoke_with_retry(model, messages, key, retries=5):
 
 
             try:
-                Path("bad_outputs").mkdir(exist_ok=True)
-                Path(f"bad_outputs/error_attempt_{attempt}.txt").write_text(
+                Path("temp/bad_outputs").mkdir(exist_ok=True)
+                Path(f"temp/bad_outputs/error_attempt_{attempt}.txt").write_text(
                     str(response) if "response" in locals() else str(e),
                     encoding="utf-8"
                 )
@@ -121,9 +123,9 @@ def batch_invoke_with_retry(model, messages, keys, retries=5,batch_name=""):
                 except Exception as e:
                     logger.error(
             f"Batch attempt {attempt}/{retries} failed for {key}: {e}")
-                    Path("bad_outputs").mkdir(exist_ok=True)
+                    Path("temp/bad_outputs").mkdir(exist_ok=True)
                     (
-                    Path(f"bad_outputs/{key}_attempt_{attempt}.txt")
+                    Path(f"temp/bad_outputs/{key}_attempt_{attempt}.txt")
                     .write_text(
                         str(resp),
                         encoding="utf-8"
@@ -232,7 +234,7 @@ def generate_shortcodes_batch(input_json_file: str,theme_name: str):
 
                 final_output.append(cleaned)
                 mark_as_processed(key,html,cleaned)
-
+                already_done.add(key)
                 with open(output_file,'w',encoding="utf-8") as f:
                     json.dump(final_output,f,indent=2,ensure_ascii=False)
 
@@ -260,7 +262,7 @@ def generate_shortcodes_batch(input_json_file: str,theme_name: str):
 
             final_output.append(cleaned)
             mark_as_processed(key,html,cleaned)
-
+            already_done.add(key)
             with open(output_file, 'w', encoding="utf-8") as f:
                 json.dump(final_output, f, indent=2, ensure_ascii=False)
 
