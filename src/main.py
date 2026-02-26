@@ -81,7 +81,7 @@ def give_shortcodes(input_path,analyzed_html_path,output_dir,theme_name):
 def run_shortcode_generation(input_path, converted_theme_path, OUTPUT_DIR_NAME):
     futures = []
     unzip_path = None
-    with ThreadPoolExecutor(max_workers=4) as executor:
+    with ThreadPoolExecutor(max_workers=3) as executor:
         for path, html_path, unzip_path in seperate_html(input_path):
             futures.append(
                 executor.submit(
@@ -106,6 +106,10 @@ async def main(input_path,theme_data):
     OUTPUT_DIR = Path("FinalShortcodes") / OUTPUT_DIR_NAME
     logger.info(OUTPUT_DIR)
     converted_theme_path = create_output_structure(OUTPUT_DIR)
+
+    for file in ["expense.json","partials_registry.json","processed_blocks.json"]:
+        if (f"temp/{file}").exists():
+            (f"temp/{file}").unlink()
 
     create_readme(theme_data,OUTPUT_DIR)
     config_file = converted_theme_path / "config.json"
@@ -145,13 +149,13 @@ async def main(input_path,theme_data):
 
     calculate_total_expense()
 
-    folder_to_delete = ["temp"]
-    for folder in folder_to_delete:
-        folder_path = Path(folder)
+    # folder_to_delete = ["temp"]
+    # for folder in folder_to_delete:
+    #     folder_path = Path(folder)
 
-        if folder_path.exists() and folder_path.is_dir():
-            logger.info(f"Deleting folder: {folder_path}")
-            shutil.rmtree(folder_path, ignore_errors=True)
+    #     if folder_path.exists() and folder_path.is_dir():
+    #         logger.info(f"Deleting folder: {folder_path}")
+    #         shutil.rmtree(folder_path, ignore_errors=True)
 
 
 

@@ -394,6 +394,29 @@ alt="{{ image_alt_text }}"
 
 ---
 
+### INTERACTIVE ATTRIBUTE RULE (STRICT)
+
+Any attribute that controls navigation or behavior must NOT be hardcoded.
+
+This includes:
+
+- href
+- target
+- rel
+- action
+- onclick
+- data-link
+- data-url
+
+Rules:
+
+• If section is UI content → link must come from a flat param.
+• If section is DATABASE content → link must come from model fields.
+• href="#" or empty href is forbidden.
+• No static URLs allowed.
+
+If any interactive attribute contains a literal value → generation is INVALID.
+
 # STATIC STRING PROHIBITION
 
 If any literal visible string appears inside the HTML template, generation is INVALID.
@@ -745,6 +768,106 @@ All non-entity structural containers (wrappers, layout divs, grid wrappers, flex
 The loop must be placed inside the same structural wrapper that originally contained repeated blocks.
 
 Layout containers must never be removed or flattened.
+
+---
+
+# STRUCTURAL WRAPPER INTEGRITY RULE (ABSOLUTE)
+
+Layout containers that wrap repeated entity blocks (such as grid columns, flex wrappers, slider wrappers, or group containers) MUST:
+
+1. Be opened exactly once.
+2. Be closed exactly once.
+3. Never be conditionally opened inside an index check.
+4. Never be conditionally closed inside an index check.
+5. Never depend on loop.index for structural wrapping.
+
+Only the repeated entity block itself may be conditionally rendered.
+
+Wrappers must exist OUTSIDE index-based segmentation logic.
+
+---
+
+## INVALID PATTERN (FORBIDDEN)
+
+Opening or closing wrappers inside index conditions:
+
+{{ @if(loop.index === 1) }}
+
+<div class="wrapper">
+{{ @endif }}
+
+...
+
+{{ @if(loop.index === 1) }}
+
+</div>
+{{ @endif }}
+
+This causes structural fragmentation and layout breakage.
+
+---
+
+## VALID PATTERN (REQUIRED)
+
+Wrapper opened once before loop:
+
+<div class="wrapper">
+
+{{ @foreach(items as item) }}
+
+{{ @if(loop.index > 0 && loop.index < 3) }} <!-- entity block only -->
+{{ @endif }}
+
+{{ @endforeach }}
+
+</div>
+
+---
+
+## GROUPED SEGMENT LAYOUT RULE
+
+If original HTML contains segmented layout such as:
+
+- 1 featured block
+- 2 related blocks inside a shared wrapper
+
+Then:
+
+- The wrapper for related blocks MUST be outside the loop.
+- The loop may control which items render inside it.
+- The wrapper must never depend on index checks.
+
+---
+
+## HARD FAILURE CONDITION
+
+If any opening or closing structural container tag:
+
+<div>, <section>, <ul>, <ol>, <swiper-wrapper>, etc.
+
+is conditionally controlled by loop.index,
+
+Generation is INVALID.
+
+---
+
+# LAYOUT SEGMENTATION SAFETY RULE
+
+Index conditions may control:
+
+- Which entity block renders
+- Which layout variation applies
+
+Index conditions may NOT control:
+
+- Column wrappers
+- Row wrappers
+- Group containers
+- Parent layout structure
+
+Only leaf-level entity markup may be inside index conditions.
+
+---
 
 # SLIDER OVERRIDE RULE
 

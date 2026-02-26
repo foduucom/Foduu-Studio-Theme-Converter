@@ -144,9 +144,9 @@ def copy_assets(theme_path: Path, output_dir: Path):
 
     all_assets_path = []
 
-    # ---------------------------------
-    # 1️⃣ Copy top-level asset folders
-    # ---------------------------------
+    
+    
+    
     for item in theme_path.iterdir():
 
         if not item.is_dir():
@@ -163,20 +163,27 @@ def copy_assets(theme_path: Path, output_dir: Path):
 
         if not has_assets:
             continue
+        
+        print(item.name)
 
-        dest_folder = assets_out / item.name
+        if item.name.lower() == "assets":
+            
+            for sub in item.iterdir():
+                dest = assets_out / sub.name
+                if sub.is_dir():
+                    shutil.copytree(sub, dest, dirs_exist_ok=True)
+                else:
+                    shutil.copy2(sub, dest)
+                all_assets_path.append(dest)
+        else:
+            dest_folder = assets_out / item.name
+            shutil.copytree(item, dest_folder, dirs_exist_ok=True)
+            all_assets_path.append(dest_folder)
+        
 
-        shutil.copytree(
-            item,
-            dest_folder,
-            dirs_exist_ok=True
-        )
-
-        all_assets_path.append(dest_folder)
-
-    # ---------------------------------
-    # 2️⃣ Copy loose root-level files
-    # ---------------------------------
+    
+    
+    
     for file in theme_path.iterdir():
 
         if not file.is_file():

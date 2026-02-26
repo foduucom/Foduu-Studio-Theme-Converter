@@ -10,9 +10,9 @@ wheels/
 .venv
 
 ExtractedThemes/
-ExtractedThemes1/
+ExtractedThemesGood/
 FinalShortcodes/
-FinalShortcodes1/
+FinalShortcodesGood/
 THEMES/
 notebook/
 .env

@@ -26,8 +26,9 @@ if use == "GEMINI":
     )
 else:
     model = ChatNVIDIA(model=model_name,
-                        temperature=0.5,
-                        max_completion_tokens=31384,
+    temperature=0.3,
+    top_p=0.95,
+    max_completion_tokens=31384,
     )   
 with open("prompt/seperation.md", "r", encoding="utf-8") as f:
     prompt = f.read()
@@ -146,8 +147,8 @@ def process_zip_file(zip_path):
 
         for file in files:
             if file.endswith(".html"):
-                if file != "index.html":
-                    continue
+                # if file != "index.html":
+                #     continue
                 
                 full_path = Path(root) / file
 
