@@ -17,8 +17,9 @@ from src.schema import ShortcodeSchema
 
 from langchain_community.callbacks import get_openai_callback
 
+load_dotenv()
 model_name = os.getenv("MODEL_NAME")
-batch_size=5
+batch_size=7
 model = ChatNVIDIA(model=model_name,
     max_completion_tokens=31384,
     temperature=0.4,
@@ -77,7 +78,7 @@ def invoke_with_retry(model, messages, key, retries=5):
             except:
                 pass
 
-            time.sleep(5)
+            time.sleep(60)
 
 
     raise last_error
@@ -133,7 +134,8 @@ def batch_invoke_with_retry(model, messages, keys, retries=5,batch_name=""):
             pending = [i for i in range(len(messages)) if results[i] is None]
         except Exception as e:
             logger.error(f"Batch attempt {attempt}/{retries} failed: {e}")
-            time.sleep(5+(attempt*2))   
+            logger.info("Retrying in 60 seconds...")
+            time.sleep(60+(attempt*2))   
         
     failed = [keys[i] for i,r in enumerate(results) if r is None]
     if failed :

@@ -16,7 +16,7 @@ You MUST return ONLY a JSON array of objects.
 
 ---
 
-## ✅ Output Format (STRICT)
+## Output Format (STRICT)
 
 Return an array like:
 
@@ -36,7 +36,7 @@ Each object MUST contain:
 
 ---
 
-## ✅ STRICT DOM ORDERING RULE (MANDATORY)
+## STRICT DOM ORDERING RULE (MANDATORY)
 
 You MUST:
 
@@ -51,7 +51,7 @@ The output order MUST match the visual top-to-bottom HTML structure exactly.
 
 ---
 
-## ✅ HEADER & FOOTER RULE (MANDATORY)
+## HEADER & FOOTER RULE (MANDATORY)
 
 If `<header>` exists:
 
@@ -85,7 +85,66 @@ header.main-header.sticky
 
 ---
 
-## ✅ Classification Rules
+## 🚫 IGNORE OVERLAY COMPONENTS (MANDATORY)
+
+Before classifying any element as `"partial"` or `"shortcode"`, you MUST ignore UI overlay containers.
+
+These elements are NOT part of the page layout or main content flow and MUST NOT appear in the output JSON.
+
+Completely skip elements that represent:
+
+- modals
+- dialogs
+- popups
+- offcanvas menus
+- mobile menus
+- drawers
+- overlays
+- lightboxes
+- cookie banners
+- search popups
+- login/register popups
+- cart side panels
+
+If an element contains **any of the following words in its class name or id**, it MUST be ignored:
+
+modal
+popup
+offcanvas
+drawer
+dialog
+overlay
+lightbox
+cookie
+search-popup
+login-modal
+cart-drawer
+mobile-menu
+
+Example elements that MUST be ignored:
+
+```
+<div class="modal fade">
+<div class="offcanvas offcanvas-start">
+<div class="search-popup">
+<div class="login-modal">
+<div class="cart-drawer">
+```
+
+Do NOT classify them as `"partial"` or `"shortcode"`.
+
+They must **not appear in the output JSON at all**.
+
+Also ignore the following HTML tags entirely:
+
+script
+noscript
+template
+style
+
+---
+
+## Classification Rules
 
 ### partial (outside main content)
 
@@ -111,7 +170,7 @@ Do NOT extract inner wrappers inside a larger section.
 
 ---
 
-## ✅ FULL CLASS SELECTOR RULE (MANDATORY)
+## FULL CLASS SELECTOR RULE (MANDATORY)
 
 When generating a selector:
 
@@ -149,7 +208,7 @@ Do NOT drop secondary classes.
 
 ---
 
-## ✅ Selector Rules (BeautifulSoup Compatible)
+## Selector Rules (BeautifulSoup Compatible)
 
 Selectors MUST work with:
 
@@ -179,7 +238,7 @@ section:nth-child(5)
 
 ---
 
-## ✅ Naming Rules
+## Naming Rules
 
 - `"name"` must be kebab-case
 - Must describe the component purpose
@@ -193,7 +252,7 @@ Examples:
 
 ---
 
-## ✅ Response Rules
+## Response Rules
 
 - Return ONLY raw JSON
 - No markdown

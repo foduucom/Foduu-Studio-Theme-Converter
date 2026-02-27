@@ -143,6 +143,32 @@ def remove_empty_divs(soup):
 
     print("Removed empty divs:", removed)
 
+def clean_head(soup):
+    head = soup.head
+    if not head:
+        return
+
+    # Remove <title>
+    for tag in head.find_all("title"):
+        tag.decompose()
+
+    # Remove favicon links
+    for link in head.find_all("link", rel=True):
+        rel_value = " ".join(link.get("rel", [])).lower()
+        if "icon" in rel_value:
+            link.decompose()
+
+    # Remove specific meta tags
+    for meta in head.find_all("meta"):
+        name_attr = meta.get("name", "").lower()
+        if name_attr in ["description", "author", "keywords"]:
+            meta.decompose()
+
+    # Avoid duplicate injection
+    if "{{{ meta_tags }}}" not in head.decode():
+        head.append(NavigableString("\n{{{ meta_tags }}}\n"))
+
+
 def build_layout(html_file, output_dir, partial_configs_path,
                  shortcode_configs_path, output_name):
     
@@ -160,7 +186,7 @@ def build_layout(html_file, output_dir, partial_configs_path,
         shortcodes = json.load(f)
 
 
-
+    clean_head(soup)
     rewrite_html_assets(soup)
     remove_all_comments(soup)
 

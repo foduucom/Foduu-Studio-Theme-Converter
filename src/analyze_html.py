@@ -90,7 +90,8 @@ def html_to_json(html_code,html_path=None,retries=3):
 
         except Exception as e:
             logger.error(f"Attempt {attempt}/{retries} failed: {e}")
-            time.sleep(1)
+            logger.info("Retrying in 60 seconds...")
+            time.sleep(60)
 
     response = model.invoke(messages) 
     clean = re.sub(r"```json|```", "", response.content).strip()

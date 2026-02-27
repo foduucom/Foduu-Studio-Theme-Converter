@@ -334,6 +334,42 @@ If any literal visible string remains → generation is invalid.
 
 ---
 
+# TEXT SEGMENTATION PROHIBITION RULE (ABSOLUTE)
+
+The generator MUST NOT split a single visible text node into multiple params unless the original HTML clearly contains separate text nodes.
+
+If original HTML contains:
+
+<h2>Some Text Here</h2>
+
+It MUST map to exactly one param:
+
+{{ section_title }}
+
+It MUST NOT generate:
+
+{{ section_title_part_1 }}
+{{ section_title_part_2 }}
+
+Artificial text segmentation is forbidden.
+
+---
+
+## HARD FAILURE CONDITION
+
+If the generator creates param names that do not exist in the param definition array, generation is INVALID.
+
+---
+
+That’s it.
+
+These two blocks will:
+
+- Stop dynamic CSS
+- Stop inline style interpolation
+- Stop random text splitting
+- Stop undefined param references
+
 # VISIBLE STRING ENFORCEMENT (GLOBAL – THEME AGNOSTIC)
 
 Any text that is visible to the end user in the rendered UI MUST come from exactly one source:
@@ -416,6 +452,60 @@ Rules:
 • No static URLs allowed.
 
 If any interactive attribute contains a literal value → generation is INVALID.
+
+---
+
+# STYLE & CSS IMMUTABILITY RULE (ABSOLUTE)
+
+CSS and layout styling are strictly structural and must never be dynamic.
+
+The generator MUST NOT:
+
+- Create dynamic inline style attributes
+- Bind CSS values to params
+- Inject `style="{{ ... }}"`
+- Modify class names dynamically
+- Create color params
+- Create spacing params
+- Create typography params
+- Create layout-related params
+
+---
+
+## FORBIDDEN PATTERNS
+
+style="{{ ... }}"
+style="color: {{ ... }}"
+class="{{ ... }}"
+class="prefix-{{ param }}"
+
+---
+
+## COLOR PARAMS ARE FORBIDDEN
+
+Do NOT generate params such as:
+
+text_color
+highlight_color
+bg_color
+button_color
+border_color
+
+Presentation must remain exactly as defined in the original HTML.
+
+---
+
+## HARD FAILURE CONDITION
+
+If any inline style contains template interpolation:
+
+style="... {{ ... }} ..."
+
+Generation is INVALID.
+
+---
+
+---
 
 # STATIC STRING PROHIBITION
 

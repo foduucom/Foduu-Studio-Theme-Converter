@@ -107,9 +107,9 @@ async def main(input_path,theme_data):
     logger.info(OUTPUT_DIR)
     converted_theme_path = create_output_structure(OUTPUT_DIR)
 
-    for file in ["expense.json","partials_registry.json","processed_blocks.json"]:
-        if (f"temp/{file}").exists():
-            (f"temp/{file}").unlink()
+    # for file in ["expense.json","partials_registry.json","processed_blocks.json"]:
+    #     if Path(f"temp/{file}").exists():
+    #         Path(f"temp/{file}").unlink()
 
     create_readme(theme_data,OUTPUT_DIR)
     config_file = converted_theme_path / "config.json"
@@ -149,13 +149,13 @@ async def main(input_path,theme_data):
 
     calculate_total_expense()
 
-    # folder_to_delete = ["temp"]
-    # for folder in folder_to_delete:
-    #     folder_path = Path(folder)
+    folder_to_delete = ["temp"]
+    for folder in folder_to_delete:
+        folder_path = Path(folder)
 
-    #     if folder_path.exists() and folder_path.is_dir():
-    #         logger.info(f"Deleting folder: {folder_path}")
-    #         shutil.rmtree(folder_path, ignore_errors=True)
+        if folder_path.exists() and folder_path.is_dir():
+            logger.info(f"Deleting folder: {folder_path}")
+            shutil.rmtree(folder_path, ignore_errors=True)
 
 
 
